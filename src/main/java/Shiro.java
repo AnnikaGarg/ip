@@ -32,31 +32,56 @@ public class Shiro {
         System.out.println();
     }
 
-    private static void printList(String[] items, int itemCount) {
+    private static void printList(Task[] tasks, int taskCount) {
         System.out.println(line);
-        for (int i = 0; i < itemCount; i++) {
-            System.out.println("     " + (i + 1) + ". " + items[i]);
+        for (int i = 0; i < taskCount; i++) {
+            System.out.println("     " + (i + 1) + ".[" + tasks[i].getStatusIcon() + "] " + tasks[i].getDescription());
         }
         System.out.println(line);
         System.out.println();
     }
 
+    private static void markMessage(Task task) {
+        System.out.println(line);
+        System.out.println("     Nice! I've marked this task as done:");
+        System.out.println("       [" + task.getStatusIcon() + "] " + task.getDescription());
+        System.out.println(line);
+        System.out.println();
+    }
+
+    private static void unmarkMessage(Task task) {
+        System.out.println(line);
+        System.out.println("     OK, I've marked this task as not done yet:");
+        System.out.println("       [" + task.getStatusIcon() + "] " + task.getDescription());
+        System.out.println(line);
+        System.out.println();
+    }
+
+
     public static void main(String[] args) {
         Scanner in = new Scanner(System.in);
-        String[] items = new String[100];
-        int itemCount = 0;
+        Task[] tasks = new Task[100];
+        int taskCount = 0;
         printGreeting();
         while (true) {
             System.out.print("> ");
-            String input = in.nextLine();
-            if (input.trim().equals("bye")) {
+            String input = in.nextLine().trim();
+            if (input.equals("bye")) {
                 printBye();
                 break;
-            } else if (input.trim().equals("list")) {
-                printList(items, itemCount);
+            } else if (input.equals("list")) {
+                printList(tasks, taskCount);
+            } else if (input.startsWith("mark ")) {
+                int index = Integer.parseInt(input.substring(5)) - 1;
+                tasks[index].markAsDone();
+                markMessage(tasks[index]);
+            } else if (input.startsWith("unmark ")) {
+                int index = Integer.parseInt(input.substring(7))-1;
+                tasks[index].markAsNotDone();
+                unmarkMessage(tasks[index]);
             } else {
-                items[itemCount] = input;
-                itemCount++;
+                tasks[taskCount] = new Task(input);
+                taskCount++;
                 printAdded(input);
             }
         }
