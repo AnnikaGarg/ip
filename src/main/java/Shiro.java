@@ -25,18 +25,20 @@ public class Shiro {
         System.out.println();
     }
 
-    private static void printAdded(String input) {
+    private static void printAdded(Task task, int taskCount) {
         System.out.println(LINE);
-        System.out.println("     added: " + input);
+        System.out.println("     Got it. I've added this task:");
+        System.out.println("     " + task);
+        System.out.println("     Now you have " + taskCount + " tasks in the list.");
         System.out.println(LINE);
         System.out.println();
     }
 
     private static void printList(Task[] tasks, int taskCount) {
         System.out.println(LINE);
+        System.out.println("     Here are the tasks in your list:");
         for (int i = 0; i < taskCount; i++) {
-            System.out.println("     " + (i + 1) + ".[" + tasks[i].getStatusIcon() + "] "
-                    + tasks[i].getDescription());
+            System.out.println("     " + (i + 1) + "." + tasks[i]);
         }
         System.out.println(LINE);
         System.out.println();
@@ -57,7 +59,6 @@ public class Shiro {
         System.out.println(LINE);
         System.out.println();
     }
-
 
     public static void main(String[] args) {
         Scanner in = new Scanner(System.in);
@@ -80,10 +81,13 @@ public class Shiro {
                 int index = Integer.parseInt(input.substring(7)) - 1;
                 tasks[index].markAsNotDone();
                 unmarkMessage(tasks[index]);
-            } else {
-                tasks[taskCount] = new Task(input);
+            } else if (input.startsWith("todo ")) {
+                String description = input.substring(5).trim();
+                tasks[taskCount] = new Todo(description);
                 taskCount++;
-                printAdded(input);
+                printAdded(tasks[taskCount - 1], taskCount);
+            } else {
+                displayEcho(input);
             }
         }
     }
