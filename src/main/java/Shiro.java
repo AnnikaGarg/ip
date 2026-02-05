@@ -86,6 +86,23 @@ public class Shiro {
                 tasks[taskCount] = new Todo(description);
                 taskCount++;
                 printAdded(tasks[taskCount - 1], taskCount);
+            } else if (input.startsWith("event ")) {
+                String taskDetails = input.substring(6).trim();
+                String[] parts = taskDetails.split(" /from ", 2);
+                String description = parts[0].trim();
+                String from = "";
+                String to = "";
+                if (parts.length == 2) {
+                    String[] timeParts = parts[1].split(" /to ", 2);
+                    from = timeParts[0].trim();
+                    if (timeParts.length == 2) {
+                        to = timeParts[1].trim();
+                    }
+                }
+                Task event = new Event(description, from, to);
+                tasks[taskCount] = event;
+                taskCount++;
+                printAdded(event, taskCount);
             } else {
                 displayEcho(input);
             }
