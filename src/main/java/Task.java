@@ -1,4 +1,6 @@
 public class Task {
+    private static final String STATUS_DONE_ICON = "X";
+    private static final String STATUS_NOT_DONE_ICON = " ";
     protected String description;
     protected boolean isDone;
 
@@ -16,15 +18,19 @@ public class Task {
     }
 
     public String getStatusIcon() {
-        return (isDone ? "X" : " ");
+        return (isDone ? STATUS_DONE_ICON : STATUS_NOT_DONE_ICON);
     }
 
     public String getDescription() {
         return description;
     }
 
+    protected String getTypeIcon() {
+        return "";
+    }
+
     @Override
     public String toString() {
-        return "[" + getStatusIcon() + "] " + description;
+        return getTypeIcon() + "[" + getStatusIcon() + "] " + description;
     }
 }

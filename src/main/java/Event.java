@@ -1,4 +1,5 @@
 public class Event extends Task {
+    private static final String TYPE_ICON = "[E]";
     protected String from;
     protected String to;
 
@@ -9,7 +10,12 @@ public class Event extends Task {
     }
 
     @Override
+    protected String getTypeIcon() {
+        return TYPE_ICON;
+    }
+
+    @Override
     public String toString() {
-        return "[E]" + super.toString() + " (from: " + from + " to: " + to + ")";
+        return super.toString() + " (from: " + from + " to: " + to + ")";
     }
 }

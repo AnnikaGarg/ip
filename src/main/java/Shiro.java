@@ -1,6 +1,7 @@
 import java.util.Scanner;
 
 public class Shiro {
+    public static final int TASK_CAPACITY = 100;
     private static final String LINE = "    ____________________________________________________________";
 
     private static void printGreeting() {
@@ -64,9 +65,63 @@ public class Shiro {
         System.out.println();
     }
 
+    private static int addTask(Task[] tasks, int taskCount, Task task) {
+        tasks[taskCount] = task;
+        taskCount++;
+        printAdded(task, taskCount);
+        return taskCount;
+    }
+
+    private static int handleDeadline(Task[] tasks, int taskCount, String input) {
+        String taskDetails = input.substring(9).trim();
+        String[] parts = taskDetails.split(" /by ", 2);
+        String description = parts[0].trim();
+        String by = "";
+        if (parts.length == 2) {
+            by = parts[1].trim();
+        }
+        Task deadline = new Deadline(description, by);
+        return addTask(tasks, taskCount, deadline);
+    }
+
+    private static int handleEvent(Task[] tasks, int taskCount, String input) {
+        String taskDetails = input.substring(6).trim();
+        String[] parts = taskDetails.split(" /from ", 2);
+        String description = parts[0].trim();
+        String from = "";
+        String to = "";
+        if (parts.length == 2) {
+            String[] timeParts = parts[1].split(" /to ", 2);
+            from = timeParts[0].trim();
+            if (timeParts.length == 2) {
+                to = timeParts[1].trim();
+            }
+        }
+        Task event = new Event(description, from, to);
+        return addTask(tasks, taskCount, event);
+    }
+
+    private static int handleTodo(Task[] tasks, int taskCount, String input) {
+        String description = input.substring(5).trim();
+        Task todo = new Todo(description);
+        return addTask(tasks, taskCount, todo);
+    }
+
+    private static void handleUnmark(Task[] tasks, String input) {
+        int index = Integer.parseInt(input.substring(7)) - 1;
+        tasks[index].markAsNotDone();
+        unmarkMessage(tasks[index]);
+    }
+
+    private static void handleMark(Task[] tasks, String input) {
+        int index = Integer.parseInt(input.substring(5)) - 1;
+        tasks[index].markAsDone();
+        markMessage(tasks[index]);
+    }
+
     public static void main(String[] args) {
         Scanner in = new Scanner(System.in);
-        Task[] tasks = new Task[100];
+        Task[] tasks = new Task[TASK_CAPACITY];
         int taskCount = 0;
         printGreeting();
         while (true) {
@@ -78,47 +133,15 @@ public class Shiro {
             } else if (input.equals("list")) {
                 printList(tasks, taskCount);
             } else if (input.startsWith("mark ")) {
-                int index = Integer.parseInt(input.substring(5)) - 1;
-                tasks[index].markAsDone();
-                markMessage(tasks[index]);
+                handleMark(tasks, input);
             } else if (input.startsWith("unmark ")) {
-                int index = Integer.parseInt(input.substring(7)) - 1;
-                tasks[index].markAsNotDone();
-                unmarkMessage(tasks[index]);
+                handleUnmark(tasks, input);
             } else if (input.startsWith("todo ")) {
-                String description = input.substring(5).trim();
-                tasks[taskCount] = new Todo(description);
-                taskCount++;
-                printAdded(tasks[taskCount - 1], taskCount);
+                taskCount = handleTodo(tasks, taskCount, input);
             } else if (input.startsWith("event ")) {
-                String taskDetails = input.substring(6).trim();
-                String[] parts = taskDetails.split(" /from ", 2);
-                String description = parts[0].trim();
-                String from = "";
-                String to = "";
-                if (parts.length == 2) {
-                    String[] timeParts = parts[1].split(" /to ", 2);
-                    from = timeParts[0].trim();
-                    if (timeParts.length == 2) {
-                        to = timeParts[1].trim();
-                    }
-                }
-                Task event = new Event(description, from, to);
-                tasks[taskCount] = event;
-                taskCount++;
-                printAdded(event, taskCount);
+                taskCount = handleEvent(tasks, taskCount, input);
             } else if (input.startsWith("deadline ")) {
-                String taskDetails = input.substring(9).trim();
-                String[] parts = taskDetails.split(" /by ", 2);
-                String description = parts[0].trim();
-                String by = "";
-                if (parts.length == 2) {
-                    by = parts[1].trim();
-                }
-                Task deadline = new Deadline(description, by);
-                tasks[taskCount] = deadline;
-                taskCount++;
-                printAdded(deadline, taskCount);
+                taskCount = handleDeadline(tasks, taskCount, input);
             } else {
                 displayEcho(input);
             }
