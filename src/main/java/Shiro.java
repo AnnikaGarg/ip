@@ -29,7 +29,11 @@ public class Shiro {
         System.out.println(LINE);
         System.out.println("     Got it. I've added this task:");
         System.out.println("     " + task);
-        System.out.println("     Now you have " + taskCount + " tasks in the list.");
+        if (taskCount == 1) {
+            System.out.println("     Now you have " + taskCount + " task in the list.");
+        } else {
+            System.out.println("     Now you have " + taskCount + " tasks in the list.");
+        }
         System.out.println(LINE);
         System.out.println();
     }
@@ -103,6 +107,18 @@ public class Shiro {
                 tasks[taskCount] = event;
                 taskCount++;
                 printAdded(event, taskCount);
+            } else if (input.startsWith("deadline ")) {
+                String taskDetails = input.substring(9).trim();
+                String[] parts = taskDetails.split(" /by ", 2);
+                String description = parts[0].trim();
+                String by = "";
+                if (parts.length == 2) {
+                    by = parts[1].trim();
+                }
+                Task deadline = new Deadline(description, by);
+                tasks[taskCount] = deadline;
+                taskCount++;
+                printAdded(deadline, taskCount);
             } else {
                 displayEcho(input);
             }
