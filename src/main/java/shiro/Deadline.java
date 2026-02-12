@@ -1,3 +1,5 @@
+package shiro;
+
 public class Deadline extends Task {
     private static final String TYPE_ICON = "[D]";
     protected String by;

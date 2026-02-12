@@ -1,3 +1,5 @@
+package shiro;
+
 import java.util.Scanner;
 
 public class Shiro {

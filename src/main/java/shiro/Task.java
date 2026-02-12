@@ -1,3 +1,5 @@
+package shiro;
+
 public class Task {
     private static final String STATUS_DONE_ICON = "X";
     private static final String STATUS_NOT_DONE_ICON = " ";
