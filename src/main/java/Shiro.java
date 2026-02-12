@@ -65,6 +65,13 @@ public class Shiro {
         System.out.println();
     }
 
+    private static void printError(String message) {
+        System.out.println(LINE);
+        System.out.println("     " + message);
+        System.out.println(LINE);
+        System.out.println();
+    }
+
     private static int addTask(Task[] tasks, int taskCount, Task task) {
         tasks[taskCount] = task;
         taskCount++;
@@ -72,51 +79,94 @@ public class Shiro {
         return taskCount;
     }
 
-    private static int handleDeadline(Task[] tasks, int taskCount, String input) {
-        String taskDetails = input.substring(9).trim();
+    private static String extractDescription(String input, String command) throws ShiroException {
+        String description = input.substring(command.length());
+        if (description.trim().isEmpty()) {
+            throw new ShiroException("☹ OOPS!!! The description of a " + command + " cannot be empty.");
+        }
+        return description;
+    }
+
+    private static int handleDeadline(Task[] tasks, int taskCount, String input) throws ShiroException {
+        String taskDetails = extractDescription(input, "deadline");
         String[] parts = taskDetails.split(" /by ", 2);
+        if(parts.length < 2) {
+            throw new ShiroException("☹ OOPS!!! The deadline must have a /by time.");
+        }
         String description = parts[0].trim();
-        String by = "";
-        if (parts.length == 2) {
-            by = parts[1].trim();
+        if (description.isEmpty()) {
+            throw new ShiroException("☹ OOPS!!! The description of a deadline cannot be empty.");
+        }
+        String by = parts[1].trim();;
+        if (by.isEmpty()) {
+            throw new ShiroException("☹ OOPS!!! The /by time of a deadline cannot be empty.");
         }
         Task deadline = new Deadline(description, by);
         return addTask(tasks, taskCount, deadline);
     }
 
-    private static int handleEvent(Task[] tasks, int taskCount, String input) {
-        String taskDetails = input.substring(6).trim();
+    private static int handleEvent(Task[] tasks, int taskCount, String input) throws ShiroException {
+        String taskDetails = extractDescription(input, "event");
         String[] parts = taskDetails.split(" /from ", 2);
+        if (parts.length < 2) {
+            throw new ShiroException("☹ OOPS!!! The event must have a /from and /to time.");
+        }
         String description = parts[0].trim();
-        String from = "";
-        String to = "";
-        if (parts.length == 2) {
-            String[] timeParts = parts[1].split(" /to ", 2);
-            from = timeParts[0].trim();
-            if (timeParts.length == 2) {
-                to = timeParts[1].trim();
-            }
+        if (description.isEmpty()) {
+            throw new ShiroException("☹ OOPS!!! The description of an event cannot be empty.");
+        }
+        String[] timeParts = parts[1].split(" /to ", 2);
+        if (timeParts.length < 2) {
+            throw new ShiroException("☹ OOPS!!! The event must have a /from and /to time.");
+        }
+        String from = timeParts[0].trim();
+        String to = timeParts[1].trim();
+        if (from.isEmpty() || to.isEmpty()) {
+            throw new ShiroException("☹ OOPS!!! The /from and /to times cannot be empty.");
         }
         Task event = new Event(description, from, to);
         return addTask(tasks, taskCount, event);
     }
 
-    private static int handleTodo(Task[] tasks, int taskCount, String input) {
-        String description = input.substring(5).trim();
+    private static int handleTodo(Task[] tasks, int taskCount, String input) throws ShiroException {
+        String description = extractDescription(input, "todo").trim();
+        if (description.isEmpty()) {
+            throw new ShiroException("☹ OOPS!!! The description of a todo cannot be empty.");
+        }
         Task todo = new Todo(description);
         return addTask(tasks, taskCount, todo);
     }
 
-    private static void handleUnmark(Task[] tasks, String input) {
-        int index = Integer.parseInt(input.substring(7)) - 1;
+    private static void handleUnmark(Task[] tasks, int taskCount, String input) throws ShiroException {
+        if(input.trim().equals("unmark")) {
+            throw new ShiroException("☹ OOPS!!! The task index to mark cannot be empty.");
+        }
+        String inputIndex = input.substring(7).trim();
+        int index = parseTaskIndex(inputIndex, taskCount);
         tasks[index].markAsNotDone();
         unmarkMessage(tasks[index]);
     }
 
-    private static void handleMark(Task[] tasks, String input) {
-        int index = Integer.parseInt(input.substring(5)) - 1;
+    private static void handleMark(Task[] tasks, int taskCount, String input) throws ShiroException {
+        if(input.trim().equals("mark")) {
+            throw new ShiroException("☹ OOPS!!! The task index to mark cannot be empty.");
+        }
+        String inputIndex = input.substring(5).trim();
+        int index = parseTaskIndex(inputIndex, taskCount);
         tasks[index].markAsDone();
         markMessage(tasks[index]);
+    }
+
+    private static int parseTaskIndex(String inputIndex, int taskCount) throws ShiroException {
+        try {
+            int index = Integer.parseInt(inputIndex.trim());
+            if (index < 1 || index > taskCount) {
+                throw new ShiroException("☹ OOPS!!! The task index provided is out of bounds.");
+            }
+            return index - 1;
+        } catch (NumberFormatException e) {
+            throw new ShiroException("☹ OOPS!!! The task index provided is not a valid number.");
+        }
     }
 
     public static void main(String[] args) {
@@ -126,24 +176,29 @@ public class Shiro {
         printGreeting();
         while (true) {
             System.out.print("> ");
-            String input = in.nextLine().trim();
-            if (input.equals("bye")) {
-                printBye();
-                break;
-            } else if (input.equals("list")) {
-                printList(tasks, taskCount);
-            } else if (input.startsWith("mark ")) {
-                handleMark(tasks, input);
-            } else if (input.startsWith("unmark ")) {
-                handleUnmark(tasks, input);
-            } else if (input.startsWith("todo ")) {
-                taskCount = handleTodo(tasks, taskCount, input);
-            } else if (input.startsWith("event ")) {
-                taskCount = handleEvent(tasks, taskCount, input);
-            } else if (input.startsWith("deadline ")) {
-                taskCount = handleDeadline(tasks, taskCount, input);
-            } else {
-                displayEcho(input);
+            String input = in.nextLine();
+            String trimmedInput = input.trim();
+            try {
+                if (trimmedInput.equals("bye")) {
+                    printBye();
+                    break;
+                } else if (trimmedInput.equals("list")) {
+                    printList(tasks, taskCount);
+                } else if (trimmedInput.equals("mark") || trimmedInput.startsWith("mark ")) {
+                    handleMark(tasks, taskCount, input);
+                } else if (trimmedInput.equals("unmark") || trimmedInput.startsWith("unmark ")) {
+                    handleUnmark(tasks, taskCount, input);
+                } else if (trimmedInput.equals("todo") || trimmedInput.startsWith("todo ")) {
+                    taskCount = handleTodo(tasks, taskCount, input);
+                } else if (trimmedInput.equals("event") || trimmedInput.startsWith("event ")) {
+                    taskCount = handleEvent(tasks, taskCount, input);
+                } else if (trimmedInput.equals("deadline") || trimmedInput.startsWith("deadline ")) {
+                    taskCount = handleDeadline(tasks, taskCount, input);
+                } else {
+                    throw new ShiroException("☹ OOPS!!! I'm sorry, but I don't know what that means :-(");
+                }
+            } catch (ShiroException e) {
+                printError(e.getMessage());
             }
         }
     }
