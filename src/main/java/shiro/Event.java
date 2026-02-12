@@ -1,3 +1,5 @@
+package shiro;
+
 public class Event extends Task {
     private static final String TYPE_ICON = "[E]";
     protected String from;
