@@ -87,18 +87,24 @@ public class Shiro {
         return description;
     }
 
-    private static int handleDeadline(Task[] tasks, int taskCount, String input) {
-        String taskDetails = input.substring(9).trim();
+    private static int handleDeadline(Task[] tasks, int taskCount, String input) throws ShiroException {
+        String taskDetails = extractDescription(input, "deadline");
         String[] parts = taskDetails.split(" /by ", 2);
+        if(parts.length < 2) {
+            throw new ShiroException("☹ OOPS!!! The deadline must have a /by time.");
+        }
         String description = parts[0].trim();
-        String by = "";
-        if (parts.length == 2) {
-            by = parts[1].trim();
+        if (description.isEmpty()) {
+            throw new ShiroException("☹ OOPS!!! The description of a deadline cannot be empty.");
+        }
+        String by = parts[1].trim();;
+        if (by.isEmpty()) {
+            throw new ShiroException("☹ OOPS!!! The /by time of a deadline cannot be empty.");
         }
         Task deadline = new Deadline(description, by);
         return addTask(tasks, taskCount, deadline);
     }
-    
+
     private static int handleEvent(Task[] tasks, int taskCount, String input) throws ShiroException {
         String taskDetails = extractDescription(input, "event");
         String[] parts = taskDetails.split(" /from ", 2);
@@ -132,6 +138,9 @@ public class Shiro {
     }
 
     private static void handleUnmark(Task[] tasks, int taskCount, String input) throws ShiroException {
+        if(input.trim().equals("unmark")) {
+            throw new ShiroException("☹ OOPS!!! The task index to mark cannot be empty.");
+        }
         String inputIndex = input.substring(7).trim();
         int index = parseTaskIndex(inputIndex, taskCount);
         tasks[index].markAsNotDone();
@@ -139,6 +148,9 @@ public class Shiro {
     }
 
     private static void handleMark(Task[] tasks, int taskCount, String input) throws ShiroException {
+        if(input.trim().equals("mark")) {
+            throw new ShiroException("☹ OOPS!!! The task index to mark cannot be empty.");
+        }
         String inputIndex = input.substring(5).trim();
         int index = parseTaskIndex(inputIndex, taskCount);
         tasks[index].markAsDone();
@@ -167,23 +179,23 @@ public class Shiro {
             String input = in.nextLine();
             String trimmedInput = input.trim();
             try {
-                if (input.equals("bye")) {
+                if (trimmedInput.equals("bye")) {
                     printBye();
                     break;
-                } else if (input.equals("list")) {
+                } else if (trimmedInput.equals("list")) {
                     printList(tasks, taskCount);
-                } else if (input.startsWith("mark ")) {
+                } else if (trimmedInput.equals("mark") || trimmedInput.startsWith("mark ")) {
                     handleMark(tasks, taskCount, input);
-                } else if (input.startsWith("unmark ")) {
+                } else if (trimmedInput.equals("unmark") || trimmedInput.startsWith("unmark ")) {
                     handleUnmark(tasks, taskCount, input);
                 } else if (trimmedInput.equals("todo") || trimmedInput.startsWith("todo ")) {
                     taskCount = handleTodo(tasks, taskCount, input);
                 } else if (trimmedInput.equals("event") || trimmedInput.startsWith("event ")) {
                     taskCount = handleEvent(tasks, taskCount, input);
-                } else if (input.startsWith("deadline ")) {
+                } else if (trimmedInput.equals("deadline") || trimmedInput.startsWith("deadline ")) {
                     taskCount = handleDeadline(tasks, taskCount, input);
                 } else {
-                    displayEcho(input);
+                    throw new ShiroException("☹ OOPS!!! I'm sorry, but I don't know what that means :-(");
                 }
             } catch (ShiroException e) {
                 printError(e.getMessage());
