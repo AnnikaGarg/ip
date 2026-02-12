@@ -80,8 +80,8 @@ public class Shiro {
     }
 
     private static String extractDescription(String input, String command) throws ShiroException {
-        String description = input.substring(command.length()).trim();
-        if (description.isEmpty()) {
+        String description = input.substring(command.length());
+        if (description.trim().isEmpty()) {
             throw new ShiroException("☹ OOPS!!! The description of a " + command + " cannot be empty.");
         }
         return description;
@@ -98,26 +98,32 @@ public class Shiro {
         Task deadline = new Deadline(description, by);
         return addTask(tasks, taskCount, deadline);
     }
-
-    private static int handleEvent(Task[] tasks, int taskCount, String input) {
-        String taskDetails = input.substring(6).trim();
+    
+    private static int handleEvent(Task[] tasks, int taskCount, String input) throws ShiroException {
+        String taskDetails = extractDescription(input, "event");
         String[] parts = taskDetails.split(" /from ", 2);
+        if (parts.length < 2) {
+            throw new ShiroException("☹ OOPS!!! The event must have a /from and /to time.");
+        }
         String description = parts[0].trim();
-        String from = "";
-        String to = "";
-        if (parts.length == 2) {
-            String[] timeParts = parts[1].split(" /to ", 2);
-            from = timeParts[0].trim();
-            if (timeParts.length == 2) {
-                to = timeParts[1].trim();
-            }
+        if (description.isEmpty()) {
+            throw new ShiroException("☹ OOPS!!! The description of an event cannot be empty.");
+        }
+        String[] timeParts = parts[1].split(" /to ", 2);
+        if (timeParts.length < 2) {
+            throw new ShiroException("☹ OOPS!!! The event must have a /from and /to time.");
+        }
+        String from = timeParts[0].trim();
+        String to = timeParts[1].trim();
+        if (from.isEmpty() || to.isEmpty()) {
+            throw new ShiroException("☹ OOPS!!! The /from and /to times cannot be empty.");
         }
         Task event = new Event(description, from, to);
         return addTask(tasks, taskCount, event);
     }
 
-    private static int handleTodo(Task[] tasks, int taskCount, String input) throws ShiroException{
-        String description = extractDescription(input, "todo");
+    private static int handleTodo(Task[] tasks, int taskCount, String input) throws ShiroException {
+        String description = extractDescription(input, "todo").trim();
         if (description.isEmpty()) {
             throw new ShiroException("☹ OOPS!!! The description of a todo cannot be empty.");
         }
@@ -125,7 +131,7 @@ public class Shiro {
         return addTask(tasks, taskCount, todo);
     }
 
-    private static void handleUnmark (Task[] tasks, int taskCount, String input) throws ShiroException {
+    private static void handleUnmark(Task[] tasks, int taskCount, String input) throws ShiroException {
         String inputIndex = input.substring(7).trim();
         int index = parseTaskIndex(inputIndex, taskCount);
         tasks[index].markAsNotDone();
@@ -172,7 +178,7 @@ public class Shiro {
                     handleUnmark(tasks, taskCount, input);
                 } else if (trimmedInput.equals("todo") || trimmedInput.startsWith("todo ")) {
                     taskCount = handleTodo(tasks, taskCount, input);
-                } else if (input.startsWith("event ")) {
+                } else if (trimmedInput.equals("event") || trimmedInput.startsWith("event ")) {
                     taskCount = handleEvent(tasks, taskCount, input);
                 } else if (input.startsWith("deadline ")) {
                     taskCount = handleDeadline(tasks, taskCount, input);
