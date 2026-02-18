@@ -2,6 +2,7 @@ package shiro;
 
 import java.util.Scanner;
 import java.util.ArrayList;
+import java.nio.file.Paths;
 
 public class Shiro {
     public static final int MAX_TASKS = 100;
@@ -60,7 +61,6 @@ public class Shiro {
         System.out.println(LINE);
         System.out.println();
     }
-
 
     private static void markMessage(Task task) {
         System.out.println(LINE);
@@ -193,7 +193,14 @@ public class Shiro {
 
     public static void main(String[] args) {
         Scanner in = new Scanner(System.in);
-        ArrayList<Task> tasks = new ArrayList<>();
+        Storage storage = new Storage(Paths.get("./data/shiro.txt"));
+        ArrayList<Task> tasks;
+        try {
+            tasks = storage.load();
+        } catch (ShiroException e) {
+            printError(e.getMessage());
+            tasks = new ArrayList<>();
+        }
         printGreeting();
         while (true) {
             System.out.print("> ");
@@ -207,16 +214,22 @@ public class Shiro {
                     printList(tasks);
                 } else if (trimmedInput.equals("mark") || trimmedInput.startsWith("mark ")) {
                     handleMark(tasks, input);
+                    storage.save(tasks);
                 } else if (trimmedInput.equals("unmark") || trimmedInput.startsWith("unmark ")) {
                     handleUnmark(tasks, input);
+                    storage.save(tasks);
                 } else if (trimmedInput.equals("todo") || trimmedInput.startsWith("todo ")) {
                     handleTodo(tasks, input);
+                    storage.save(tasks);
                 } else if (trimmedInput.equals("event") || trimmedInput.startsWith("event ")) {
                     handleEvent(tasks, input);
+                    storage.save(tasks);
                 } else if (trimmedInput.equals("deadline") || trimmedInput.startsWith("deadline ")) {
                     handleDeadline(tasks, input);
+                    storage.save(tasks);
                 } else if (trimmedInput.equals("delete") || trimmedInput.startsWith("delete ")) {
                     handleDelete(tasks, input);
+                    storage.save(tasks);
                 } else {
                     throw new ShiroException("☹ OOPS!!! I'm sorry, but I don't know what that means :-(");
                 }
