@@ -1,9 +1,11 @@
 package shiro;
 
 import java.util.Scanner;
+import java.util.ArrayList;
+import java.nio.file.Paths;
 
 public class Shiro {
-    public static final int TASK_CAPACITY = 100;
+    public static final int MAX_TASKS = 100;
     private static final String LINE = "    ____________________________________________________________";
 
     private static void printGreeting() {
@@ -41,11 +43,11 @@ public class Shiro {
         System.out.println();
     }
 
-    private static void printList(Task[] tasks, int taskCount) {
+    private static void printList(ArrayList<Task> tasks) {
         System.out.println(LINE);
         System.out.println("     Here are the tasks in your list:");
-        for (int i = 0; i < taskCount; i++) {
-            System.out.println("     " + (i + 1) + "." + tasks[i]);
+        for (int i = 0; i < tasks.size(); i++) {
+            System.out.println("     " + (i + 1) + "." + tasks.get(i));
         }
         System.out.println(LINE);
         System.out.println();
@@ -74,11 +76,9 @@ public class Shiro {
         System.out.println();
     }
 
-    private static int addTask(Task[] tasks, int taskCount, Task task) {
-        tasks[taskCount] = task;
-        taskCount++;
-        printAdded(task, taskCount);
-        return taskCount;
+    private static void addTask(ArrayList<Task> tasks, Task task) {
+        tasks.add(task);
+        printAdded(task, tasks.size());
     }
 
     private static String extractDescription(String input, String command) throws ShiroException {
@@ -89,7 +89,7 @@ public class Shiro {
         return description;
     }
 
-    private static int handleDeadline(Task[] tasks, int taskCount, String input) throws ShiroException {
+    private static void handleDeadline(ArrayList<Task> tasks, String input) throws ShiroException {
         String taskDetails = extractDescription(input, "deadline");
         String[] parts = taskDetails.split(" /by ", 2);
         if(parts.length < 2) {
@@ -104,10 +104,10 @@ public class Shiro {
             throw new ShiroException("☹ OOPS!!! The /by time of a deadline cannot be empty.");
         }
         Task deadline = new Deadline(description, by);
-        return addTask(tasks, taskCount, deadline);
+        addTask(tasks, deadline);
     }
 
-    private static int handleEvent(Task[] tasks, int taskCount, String input) throws ShiroException {
+    private static void handleEvent(ArrayList<Task> tasks, String input) throws ShiroException {
         String taskDetails = extractDescription(input, "event");
         String[] parts = taskDetails.split(" /from ", 2);
         if (parts.length < 2) {
@@ -127,42 +127,42 @@ public class Shiro {
             throw new ShiroException("☹ OOPS!!! The /from and /to times cannot be empty.");
         }
         Task event = new Event(description, from, to);
-        return addTask(tasks, taskCount, event);
+        addTask(tasks, event);
     }
 
-    private static int handleTodo(Task[] tasks, int taskCount, String input) throws ShiroException {
+    private static void handleTodo(ArrayList<Task> tasks, String input) throws ShiroException {
         String description = extractDescription(input, "todo").trim();
         if (description.isEmpty()) {
             throw new ShiroException("☹ OOPS!!! The description of a todo cannot be empty.");
         }
         Task todo = new Todo(description);
-        return addTask(tasks, taskCount, todo);
+        addTask(tasks, todo);
     }
 
-    private static void handleUnmark(Task[] tasks, int taskCount, String input) throws ShiroException {
+    private static void handleUnmark(ArrayList<Task> tasks, String input) throws ShiroException {
         if(input.trim().equals("unmark")) {
             throw new ShiroException("☹ OOPS!!! The task index to mark cannot be empty.");
         }
         String inputIndex = input.substring(7).trim();
-        int index = parseTaskIndex(inputIndex, taskCount);
-        tasks[index].markAsNotDone();
-        unmarkMessage(tasks[index]);
+        int index = parseTaskIndex(inputIndex, tasks);
+        tasks.get(index).markAsNotDone();
+        unmarkMessage(tasks.get(index));
     }
 
-    private static void handleMark(Task[] tasks, int taskCount, String input) throws ShiroException {
+    private static void handleMark(ArrayList<Task> tasks, String input) throws ShiroException {
         if(input.trim().equals("mark")) {
             throw new ShiroException("☹ OOPS!!! The task index to mark cannot be empty.");
         }
         String inputIndex = input.substring(5).trim();
-        int index = parseTaskIndex(inputIndex, taskCount);
-        tasks[index].markAsDone();
-        markMessage(tasks[index]);
+        int index = parseTaskIndex(inputIndex, tasks);
+        tasks.get(index).markAsDone();
+        markMessage(tasks.get(index));
     }
 
-    private static int parseTaskIndex(String inputIndex, int taskCount) throws ShiroException {
+    private static int parseTaskIndex(String inputIndex, ArrayList<Task> tasks) throws ShiroException {
         try {
             int index = Integer.parseInt(inputIndex.trim());
-            if (index < 1 || index > taskCount) {
+            if (index < 1 || index > tasks.size()) {
                 throw new ShiroException("☹ OOPS!!! The task index provided is out of bounds.");
             }
             return index - 1;
@@ -173,8 +173,14 @@ public class Shiro {
 
     public static void main(String[] args) {
         Scanner in = new Scanner(System.in);
-        Task[] tasks = new Task[TASK_CAPACITY];
-        int taskCount = 0;
+        Storage storage = new Storage(Paths.get("./data/shiro.txt"));
+        ArrayList<Task> tasks;
+        try {
+            tasks = storage.load();
+        } catch (ShiroException e) {
+            printError(e.getMessage());
+            tasks = new ArrayList<>();
+        }
         printGreeting();
         while (true) {
             System.out.print("> ");
@@ -185,17 +191,22 @@ public class Shiro {
                     printBye();
                     break;
                 } else if (trimmedInput.equals("list")) {
-                    printList(tasks, taskCount);
+                    printList(tasks);
                 } else if (trimmedInput.equals("mark") || trimmedInput.startsWith("mark ")) {
-                    handleMark(tasks, taskCount, input);
+                    handleMark(tasks, input);
+                    storage.save(tasks);
                 } else if (trimmedInput.equals("unmark") || trimmedInput.startsWith("unmark ")) {
-                    handleUnmark(tasks, taskCount, input);
+                    handleUnmark(tasks, input);
+                    storage.save(tasks);
                 } else if (trimmedInput.equals("todo") || trimmedInput.startsWith("todo ")) {
-                    taskCount = handleTodo(tasks, taskCount, input);
+                    handleTodo(tasks, input);
+                    storage.save(tasks);
                 } else if (trimmedInput.equals("event") || trimmedInput.startsWith("event ")) {
-                    taskCount = handleEvent(tasks, taskCount, input);
+                    handleEvent(tasks, input);
+                    storage.save(tasks);
                 } else if (trimmedInput.equals("deadline") || trimmedInput.startsWith("deadline ")) {
-                    taskCount = handleDeadline(tasks, taskCount, input);
+                    handleDeadline(tasks, input);
+                    storage.save(tasks);
                 } else {
                     throw new ShiroException("☹ OOPS!!! I'm sorry, but I don't know what that means :-(");
                 }
