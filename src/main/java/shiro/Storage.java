@@ -75,6 +75,42 @@ public class Storage {
         }
     }
 
+    private static boolean parseDoneFlag(String doneFlag)
+            throws ShiroException {
+
+        if (doneFlag.equals("1")) {
+            return true;
+        } else if (doneFlag.equals("0")) {
+            return false;
+        } else {
+            throw new ShiroException("Corrupted Data");
+        }
+    }
+
+    private static Task createTaskFromParts(String type, String description, String[] parts) throws ShiroException {
+        switch (type) {
+        case "T":
+            return new Todo(description);
+
+        case "D":
+            if (parts.length < 4) {
+                throw new ShiroException("Corrupted Data");
+            }
+            return new Deadline(description, parts[3].trim());
+
+        case "E":
+            if (parts.length < 5) {
+                throw new ShiroException("Corrupted Data");
+            }
+            return new Event(description,
+                    parts[3].trim(),
+                    parts[4].trim());
+
+        default:
+            throw new ShiroException("Corrupted Data");
+        }
+    }
+
     private static Task parseLineToTask(String line) throws ShiroException {
         String[] parts = line.split(" \\| ");
         if (parts.length < 3) {
@@ -82,41 +118,15 @@ public class Storage {
         }
 
         String type = parts[0].trim();
-        String doneFlag = parts[1].trim();
+        boolean isDone = parseDoneFlag(parts[1].trim());
         String description = parts[2].trim();
 
-        boolean isDone;
-        if (doneFlag.equals("1")) {
-            isDone = true;
-        } else if (doneFlag.equals("0")) {
-            isDone = false;
-        } else {
-            throw new ShiroException("Corrupted Data");
-        }
+        Task task = createTaskFromParts(type, description, parts);
 
-        Task task;
-        switch (type) {
-        case "T":
-            task = new Todo(description);
-            break;
-        case "D":
-            if (parts.length < 4) {
-                throw new ShiroException("Corrupted Data");
-            }
-            task = new Deadline(description, parts[3].trim());
-            break;
-        case "E":
-            if (parts.length < 5) {
-                throw new ShiroException("Corrupted Data");
-            }
-            task = new Event(description, parts[3].trim(), parts[4].trim());
-            break;
-        default:
-            throw new ShiroException("Corrupted Data");
-        }
         if (isDone) {
             task.markAsDone();
         }
+
         return task;
     }
 
@@ -131,6 +141,7 @@ public class Storage {
             Event event = (Event) task;
             return "E | " + doneFlag + " | " + task.getDescription() + " | " + event.from + " | " + event.to;
         } else {
+            // Fallback format for unknown task subclasses.
             return "T | " + doneFlag + " | " + task.getDescription();
         }
     }

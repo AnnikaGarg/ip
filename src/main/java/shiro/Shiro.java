@@ -9,7 +9,7 @@ import java.nio.file.Paths;
  * Handles user input, command routing and interaction flow.
  */
 public class Shiro {
-    
+
     private static final String LINE = "    ____________________________________________________________";
 
     private static void printGreeting() {
@@ -23,13 +23,6 @@ public class Shiro {
     private static void printBye() {
         System.out.println(LINE);
         System.out.println("     Bye. Hope to see you again soon!");
-        System.out.println(LINE);
-        System.out.println();
-    }
-
-    private static void displayEcho(String input) {
-        System.out.println(LINE);
-        System.out.println("     " + input);
         System.out.println(LINE);
         System.out.println();
     }
@@ -197,48 +190,63 @@ public class Shiro {
         }
     }
 
+    private static ArrayList<Task> loadTasks(Storage storage) {
+        try {
+            return storage.load();
+        } catch (ShiroException e) {
+            printError(e.getMessage());
+            return new ArrayList<>();
+        }
+    }
+
+    private static void handleCommand(String input, ArrayList<Task> tasks, Storage storage) throws ShiroException {
+
+        String trimmedInput = input.trim();
+
+        if (trimmedInput.equals("list")) {
+            printList(tasks);
+        } else if (trimmedInput.equals("mark") || trimmedInput.startsWith("mark ")) {
+            handleMark(tasks, input);
+            storage.save(tasks);
+        } else if (trimmedInput.equals("unmark") || trimmedInput.startsWith("unmark ")) {
+            handleUnmark(tasks, input);
+            storage.save(tasks);
+        } else if (trimmedInput.equals("todo") || trimmedInput.startsWith("todo ")) {
+            handleTodo(tasks, input);
+            storage.save(tasks);
+        } else if (trimmedInput.equals("event") || trimmedInput.startsWith("event ")) {
+            handleEvent(tasks, input);
+            storage.save(tasks);
+        } else if (trimmedInput.equals("deadline") || trimmedInput.startsWith("deadline ")) {
+            handleDeadline(tasks, input);
+            storage.save(tasks);
+        } else if (trimmedInput.equals("delete") || trimmedInput.startsWith("delete ")) {
+            handleDelete(tasks, input);
+            storage.save(tasks);
+        } else {
+            throw new ShiroException("☹ OOPS!!! I'm sorry, but I don't know what that means :-(");
+        }
+    }
+
     public static void main(String[] args) {
         Scanner in = new Scanner(System.in);
         Storage storage = new Storage(Paths.get("./data/shiro.txt"));
-        ArrayList<Task> tasks;
-        try {
-            tasks = storage.load();
-        } catch (ShiroException e) {
-            printError(e.getMessage());
-            tasks = new ArrayList<>();
-        }
+
+        ArrayList<Task> tasks = loadTasks(storage);
+
         printGreeting();
         while (true) {
             System.out.print("> ");
             String input = in.nextLine();
             String trimmedInput = input.trim();
+
+            if (trimmedInput.equals("bye")) {
+                printBye();
+                break;
+            }
+
             try {
-                if (trimmedInput.equals("bye")) {
-                    printBye();
-                    break;
-                } else if (trimmedInput.equals("list")) {
-                    printList(tasks);
-                } else if (trimmedInput.equals("mark") || trimmedInput.startsWith("mark ")) {
-                    handleMark(tasks, input);
-                    storage.save(tasks);
-                } else if (trimmedInput.equals("unmark") || trimmedInput.startsWith("unmark ")) {
-                    handleUnmark(tasks, input);
-                    storage.save(tasks);
-                } else if (trimmedInput.equals("todo") || trimmedInput.startsWith("todo ")) {
-                    handleTodo(tasks, input);
-                    storage.save(tasks);
-                } else if (trimmedInput.equals("event") || trimmedInput.startsWith("event ")) {
-                    handleEvent(tasks, input);
-                    storage.save(tasks);
-                } else if (trimmedInput.equals("deadline") || trimmedInput.startsWith("deadline ")) {
-                    handleDeadline(tasks, input);
-                    storage.save(tasks);
-                } else if (trimmedInput.equals("delete") || trimmedInput.startsWith("delete ")) {
-                    handleDelete(tasks, input);
-                    storage.save(tasks);
-                } else {
-                    throw new ShiroException("☹ OOPS!!! I'm sorry, but I don't know what that means :-(");
-                }
+                handleCommand(input, tasks, storage);
             } catch (ShiroException e) {
                 printError(e.getMessage());
             }
