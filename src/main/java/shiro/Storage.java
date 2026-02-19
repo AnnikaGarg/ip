@@ -6,8 +6,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-/*
- * Storage class for handling file operations related to task storage.
+/**
+ * Loads tasks from disk and saves tasks to disk using a simple text-based format.
  */
 public class Storage {
     private final Path filePath;
@@ -16,14 +16,22 @@ public class Storage {
         this.filePath = filePath;
     }
 
+    /**
+     * Loads tasks from the storage file.
+     *
+     * @return Task list loaded from disk. Returns an empty list if the file does not exist.
+     * @throws ShiroException If an IO error occurs while reading the file.
+     */
     public ArrayList<Task> load() throws ShiroException {
         try {
             ensureParentFolderExists();
             if (!Files.exists(filePath)) {
                 return new ArrayList<>();
             }
+
             List<String> lines = Files.readAllLines(filePath);
             ArrayList<Task> tasks = new ArrayList<>();
+
             for (String line : lines) {
                 if (line.trim().isEmpty()) {
                     continue;
@@ -40,9 +48,16 @@ public class Storage {
         }
     }
 
+    /**
+     * Saves the given task list to the storage file.
+     *
+     * @param tasks Task list to save.
+     * @throws ShiroException If an IO error occurs while writing the file.
+     */
     public void save(ArrayList<Task> tasks) throws ShiroException {
         try {
             ensureParentFolderExists();
+
             ArrayList<String> lines = new ArrayList<>();
             for (Task task : tasks) {
                 lines.add(taskToLine(task));
@@ -60,45 +75,58 @@ public class Storage {
         }
     }
 
+    private static boolean parseDoneFlag(String doneFlag)
+            throws ShiroException {
+
+        if (doneFlag.equals("1")) {
+            return true;
+        } else if (doneFlag.equals("0")) {
+            return false;
+        } else {
+            throw new ShiroException("Corrupted Data");
+        }
+    }
+
+    private static Task createTaskFromParts(String type, String description, String[] parts) throws ShiroException {
+        switch (type) {
+        case "T":
+            return new Todo(description);
+
+        case "D":
+            if (parts.length < 4) {
+                throw new ShiroException("Corrupted Data");
+            }
+            return new Deadline(description, parts[3].trim());
+
+        case "E":
+            if (parts.length < 5) {
+                throw new ShiroException("Corrupted Data");
+            }
+            return new Event(description,
+                    parts[3].trim(),
+                    parts[4].trim());
+
+        default:
+            throw new ShiroException("Corrupted Data");
+        }
+    }
+
     private static Task parseLineToTask(String line) throws ShiroException {
         String[] parts = line.split(" \\| ");
         if (parts.length < 3) {
             throw new ShiroException("Corrupted Data");
         }
+
         String type = parts[0].trim();
-        String doneFlag = parts[1].trim();
+        boolean isDone = parseDoneFlag(parts[1].trim());
         String description = parts[2].trim();
-        boolean isDone;
-        if (doneFlag.equals("1")) {
-            isDone = true;
-        } else if (doneFlag.equals("0")) {
-            isDone = false;
-        } else {
-            throw new ShiroException("Corrupted Data");
-        }
-        Task task;
-        switch (type) {
-        case "T":
-            task = new Todo(description);
-            break;
-        case "D":
-            if (parts.length < 4) {
-                throw new ShiroException("Corrupted Data");
-            }
-            task = new Deadline(description, parts[3].trim());
-            break;
-        case "E":
-            if (parts.length < 5) {
-                throw new ShiroException("Corrupted Data");
-            }
-            task = new Event(description, parts[3].trim(), parts[4].trim());
-            break;
-        default:
-            throw new ShiroException("Corrupted Data");
-        }
+
+        Task task = createTaskFromParts(type, description, parts);
+
         if (isDone) {
             task.markAsDone();
         }
+
         return task;
     }
 
@@ -113,6 +141,7 @@ public class Storage {
             Event event = (Event) task;
             return "E | " + doneFlag + " | " + task.getDescription() + " | " + event.from + " | " + event.to;
         } else {
+            // Fallback format for unknown task subclasses.
             return "T | " + doneFlag + " | " + task.getDescription();
         }
     }
