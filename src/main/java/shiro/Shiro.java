@@ -4,8 +4,12 @@ import java.util.Scanner;
 import java.util.ArrayList;
 import java.nio.file.Paths;
 
+/**
+ * Main entry point for the Shiro chatbot application.
+ * Handles user input, command routing and interaction flow.
+ */
 public class Shiro {
-    public static final int MAX_TASKS = 100;
+    
     private static final String LINE = "    ____________________________________________________________";
 
     private static void printGreeting() {
@@ -104,12 +108,14 @@ public class Shiro {
         if (parts.length < 2) {
             throw new ShiroException("☹ OOPS!!! The deadline must have a /by time.");
         }
+
         String description = parts[0].trim();
+        String by = parts[1].trim();
+
         if (description.isEmpty()) {
             throw new ShiroException("☹ OOPS!!! The description of a deadline cannot be empty.");
         }
-        String by = parts[1].trim();
-        ;
+
         if (by.isEmpty()) {
             throw new ShiroException("☹ OOPS!!! The /by time of a deadline cannot be empty.");
         }
