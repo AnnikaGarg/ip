@@ -4,8 +4,8 @@ import java.util.Scanner;
 import java.nio.file.Paths;
 
 /**
- * Main entry point for the Shiro chatbot application.
- * Handles user input, command routing and interaction flow.
+ * Represents the main entry point of the Shiro chatbot application.
+ * Handles program flow, command execution, and user interaction.
  */
 public class Shiro {
 

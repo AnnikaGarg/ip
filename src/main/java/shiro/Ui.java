@@ -1,9 +1,17 @@
 package shiro;
 
 import java.util.ArrayList;
+
+/**
+ * Handles interactions between the Shiro chatbot and the user.
+ * Provides methods to display messages and task information.
+ */
 public class Ui {
     private static final String LINE = "    ____________________________________________________________";
 
+    /**
+     * Prints the greeting message displayed when the program starts.
+     */
     public static void printGreeting() {
         System.out.println(LINE);
         System.out.println("     Hello! I'm Shiro");
@@ -12,6 +20,9 @@ public class Ui {
         System.out.println();
     }
 
+    /**
+     * Prints the farewell message displayed when the program exits.
+     */
     public static void printBye() {
         System.out.println(LINE);
         System.out.println("     Bye. Hope to see you again soon!");
@@ -19,6 +30,12 @@ public class Ui {
         System.out.println();
     }
 
+    /**
+     * Prints a confirmation message when a task is added.
+     *
+     * @param task Task that was added.
+     * @param taskCount Total number of tasks in the list.
+     */
     public static void printAdded(Task task, int taskCount) {
         System.out.println(LINE);
         System.out.println("     Got it. I've added this task:");
@@ -32,6 +49,11 @@ public class Ui {
         System.out.println();
     }
 
+    /**
+     * Prints all tasks currently in the task list.
+     *
+     * @param tasks List of tasks to display.
+     */
     public static void printList(ArrayList<Task> tasks) {
         System.out.println(LINE);
         System.out.println("     Here are the tasks in your list:");
@@ -42,6 +64,12 @@ public class Ui {
         System.out.println();
     }
 
+    /**
+     * Prints a confirmation message when a task is deleted.
+     *
+     * @param task Task that was removed.
+     * @param taskCount Updated number of tasks in the list.
+     */
     public static void printDeleted(Task task, int taskCount) {
         System.out.println(LINE);
         System.out.println("     Noted. I've removed this task:");
@@ -55,6 +83,11 @@ public class Ui {
         System.out.println();
     }
 
+    /**
+     * Prints a confirmation message when a task is marked as done.
+     *
+     * @param task Task that was marked as done.
+     */
     public static void printMarked(Task task) {
         System.out.println(LINE);
         System.out.println("     Nice! I've marked this task as done:");
@@ -63,6 +96,11 @@ public class Ui {
         System.out.println();
     }
 
+    /**
+     * Prints a confirmation message when a task is marked as not done.
+     *
+     * @param task Task that was marked as not done.
+     */
     public static void printUnmarked(Task task) {
         System.out.println(LINE);
         System.out.println("     OK, I've marked this task as not done yet:");
@@ -71,6 +109,11 @@ public class Ui {
         System.out.println();
     }
 
+    /**
+     * Prints tasks that match a given search keyword.
+     *
+     * @param matchingTasks List of tasks that match the keyword.
+     */
     public static void printMatchingTasks(TaskList matchingTasks) {
         System.out.println(LINE);
         if (matchingTasks.size() == 0) {
@@ -85,6 +128,11 @@ public class Ui {
         System.out.println();
     }
 
+    /**
+     * Prints an error message.
+     *
+     * @param message Error message to display.
+     */
     public static void printError(String message) {
         System.out.println(LINE);
         System.out.println("     " + message);
