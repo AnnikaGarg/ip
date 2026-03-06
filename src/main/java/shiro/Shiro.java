@@ -67,6 +67,10 @@ public class Shiro {
         } else if (command.equals("delete")) {
             handleDelete(tasks, input);
             storage.save(tasks.getAllTasks());
+        } else if (command.equals("find")) {
+            String keyword = Parser.parseFindKeyword(input);
+            TaskList matchingTasks = tasks.find(keyword);
+            Ui.printMatchingTasks(matchingTasks);
         } else {
             throw new ShiroException("☹ OOPS!!! I'm sorry, but I don't know what that means :-(");
         }
