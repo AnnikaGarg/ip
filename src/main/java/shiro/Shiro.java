@@ -10,81 +10,9 @@ import java.nio.file.Paths;
  */
 public class Shiro {
 
-    private static final String LINE = "    ____________________________________________________________";
-
-    private static void printGreeting() {
-        System.out.println(LINE);
-        System.out.println("     Hello! I'm Shiro");
-        System.out.println("     What can I do for you?");
-        System.out.println(LINE);
-        System.out.println();
-    }
-
-    private static void printBye() {
-        System.out.println(LINE);
-        System.out.println("     Bye. Hope to see you again soon!");
-        System.out.println(LINE);
-        System.out.println();
-    }
-
-    private static void printAdded(Task task, int taskCount) {
-        System.out.println(LINE);
-        System.out.println("     Got it. I've added this task:");
-        System.out.println("     " + task);
-        if (taskCount == 1) {
-            System.out.println("     Now you have " + taskCount + " task in the list.");
-        } else {
-            System.out.println("     Now you have " + taskCount + " tasks in the list.");
-        }
-        System.out.println(LINE);
-        System.out.println();
-    }
-
-    private static void printList(ArrayList<Task> tasks) {
-        System.out.println(LINE);
-        System.out.println("     Here are the tasks in your list:");
-        for (int i = 0; i < tasks.size(); i++) {
-            System.out.println("     " + (i + 1) + "." + tasks.get(i));
-        }
-        System.out.println(LINE);
-        System.out.println();
-    }
-
-    private static void printDeleted(Task task, int taskCount) {
-        System.out.println(LINE);
-        System.out.println("     Noted. I've removed this task:");
-        System.out.println("       " + task);
-        System.out.println("     Now you have " + taskCount + " tasks in the list.");
-        System.out.println(LINE);
-        System.out.println();
-    }
-
-    private static void markMessage(Task task) {
-        System.out.println(LINE);
-        System.out.println("     Nice! I've marked this task as done:");
-        System.out.println("       " + task);
-        System.out.println(LINE);
-        System.out.println();
-    }
-
-    private static void unmarkMessage(Task task) {
-        System.out.println(LINE);
-        System.out.println("     OK, I've marked this task as not done yet:");
-        System.out.println("       " + task);
-        System.out.println(LINE);
-        System.out.println();
-    }
-
-    private static void printError(String message) {
-        System.out.println(LINE);
-        System.out.println("     " + message);
-        System.out.println(LINE);
-        System.out.println();
-    }
-
     private static void addTask(ArrayList<Task> tasks, Task task) {
         tasks.add(task);
-        printAdded(task, tasks.size());
+        Ui.printAdded(task, tasks.size());
     }
 
     private static String extractDescription(String input, String command) throws ShiroException {
@@ -155,7 +83,7 @@ public class Shiro {
         String inputIndex = input.substring(7).trim();
         int index = parseTaskIndex(inputIndex, tasks);
         tasks.get(index).markAsNotDone();
-        unmarkMessage(tasks.get(index));
+        Ui.printUnmarked(tasks.get(index));
     }
 
     private static void handleMark(ArrayList<Task> tasks, String input) throws ShiroException {
@@ -165,7 +93,7 @@ public class Shiro {
         String inputIndex = input.substring(5).trim();
         int index = parseTaskIndex(inputIndex, tasks);
         tasks.get(index).markAsDone();
-        markMessage(tasks.get(index));
+        Ui.printMarked(tasks.get(index));
     }
 
     private static void handleDelete(ArrayList<Task> tasks, String input) throws ShiroException {
@@ -175,7 +103,7 @@ public class Shiro {
         String inputIndex = input.substring(7).trim(); // after "delete "
         int index = parseTaskIndex(inputIndex, tasks);
         Task removed = tasks.remove(index);
-        printDeleted(removed, tasks.size());
+        Ui.printDeleted(removed, tasks.size());
     }
 
     private static int parseTaskIndex(String inputIndex, ArrayList<Task> tasks) throws ShiroException {
@@ -194,7 +122,7 @@ public class Shiro {
         try {
             return storage.load();
         } catch (ShiroException e) {
-            printError(e.getMessage());
+            Ui.printError(e.getMessage());
             return new ArrayList<>();
         }
     }
@@ -204,7 +132,7 @@ public class Shiro {
         String trimmedInput = input.trim();
 
         if (trimmedInput.equals("list")) {
-            printList(tasks);
+            Ui.printList(tasks);
         } else if (trimmedInput.equals("mark") || trimmedInput.startsWith("mark ")) {
             handleMark(tasks, input);
             storage.save(tasks);
@@ -234,21 +162,21 @@ public class Shiro {
 
         ArrayList<Task> tasks = loadTasks(storage);
 
-        printGreeting();
+        Ui.printGreeting();
         while (true) {
             System.out.print("> ");
             String input = in.nextLine();
             String trimmedInput = input.trim();
 
             if (trimmedInput.equals("bye")) {
-                printBye();
+                Ui.printBye();
                 break;
             }
 
             try {
                 handleCommand(input, tasks, storage);
             } catch (ShiroException e) {
-                printError(e.getMessage());
+                Ui.printError(e.getMessage());
             }
         }
     }
