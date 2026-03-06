@@ -72,7 +72,7 @@ public class Shiro {
             TaskList matchingTasks = tasks.find(keyword);
             Ui.printMatchingTasks(matchingTasks);
         } else {
-            throw new ShiroException("☹ OOPS!!! I'm sorry, but I don't know what that means :-(");
+            throw new ShiroException(":( OOPS!!! I'm sorry, but I don't know what that means :-(");
         }
     }
 
