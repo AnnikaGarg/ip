@@ -4,8 +4,8 @@ import java.util.Scanner;
 import java.nio.file.Paths;
 
 /**
- * Main entry point for the Shiro chatbot application.
- * Handles user input, command routing and interaction flow.
+ * Represents the main entry point of the Shiro chatbot application.
+ * Handles program flow, command execution, and user interaction.
  */
 public class Shiro {
 
@@ -72,7 +72,7 @@ public class Shiro {
             TaskList matchingTasks = tasks.find(keyword);
             Ui.printMatchingTasks(matchingTasks);
         } else {
-            throw new ShiroException("☹ OOPS!!! I'm sorry, but I don't know what that means :-(");
+            throw new ShiroException(":( OOPS!!! I'm sorry, but I don't know what that means :-(");
         }
     }
 

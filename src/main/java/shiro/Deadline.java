@@ -10,10 +10,10 @@ public class Deadline extends Task {
     protected String by;
 
     /**
-     * Creates a new Deadline task with the given description and due time.
+     * Creates a deadline task with the given description and due time.
      *
      * @param description Description of the deadline task.
-     * @param by          Due time of the task.
+     * @param by due time of the task.
      */
     public Deadline(String description, String by) {
         super(description);

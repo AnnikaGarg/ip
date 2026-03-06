@@ -44,7 +44,7 @@ public class Storage {
             }
             return tasks;
         } catch (IOException e) {
-            throw new ShiroException("☹ OOPS!!! I couldn't load your saved tasks.");
+            throw new ShiroException(":( OOPS!!! I couldn't load your saved tasks.");
         }
     }
 
@@ -64,7 +64,7 @@ public class Storage {
             }
             Files.write(filePath, lines);
         } catch (IOException e) {
-            throw new ShiroException("☹ OOPS!!! I couldn't save your tasks.");
+            throw new ShiroException(":( OOPS!!! I couldn't save your tasks.");
         }
     }
 
