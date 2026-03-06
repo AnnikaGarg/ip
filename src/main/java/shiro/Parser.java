@@ -89,4 +89,14 @@ public class Parser {
             throw new ShiroException("☹ OOPS!!! The task index provided is not a valid number.");
         }
     }
+    
+    public static String parseFindKeyword(String input) throws ShiroException {
+        String keyword = extractDescription(input, "find").trim();
+
+        if (keyword.isEmpty()) {
+            throw new ShiroException("☹ OOPS!!! The keyword for find cannot be empty.");
+        }
+
+        return keyword;
+    }
 }
